@@ -50,6 +50,8 @@ class Stall(db.Model):
     closing_time = db.Column(db.Time, nullable=False)
     image_path = db.Column(db.String(255))
     status = db.Column(db.String(32), nullable=False, default=PlaceStatus.CLOSED, index=True)
+    # How many people can cook at once. The wait formula divides by this.
+    active_counters = db.Column(db.Integer, nullable=False, default=1)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 

@@ -51,6 +51,8 @@ class BaseConfig:
     WTF_CSRF_ENABLED = True
     VERIFICATION_CODE_MINUTES = 30
     VERIFICATION_MAX_ATTEMPTS = 5
+    TAX_RATE = 0
+    LOGIN_MAX_ATTEMPTS = 5
 
 
 class DevelopmentConfig(BaseConfig):

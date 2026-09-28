@@ -42,16 +42,31 @@ def login():
             flash("This account is suspended.", "danger")
         elif not user.email_verified:
             flash("Verify your college email before signing in.", "warning")
+        elif _login_blocked(form.email.data):
+            flash("Too many login attempts. Wait a few minutes and try again.", "danger")
         else:
             login_user(user)
+            _login_attempts.pop(form.email.data.strip().lower(), None)
+            from app.models import ActivityLog
+            from app.extensions import db
+
+            db.session.add(ActivityLog(actor_id=user.id, action="login", detail=user.email))
+            db.session.commit()
             flash("You are signed in.", "success")
             return redirect(_safe_next(request.args.get("next")))
+        _note_failed_login(form.email.data)
     return render_template("auth/login.html", form=form)
 
 
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    from app.extensions import db
+    from app.models import ActivityLog
+
+    if current_user.is_authenticated:
+        db.session.add(ActivityLog(actor_id=current_user.id, action="logout", detail=current_user.email))
+        db.session.commit()
     logout_user()
     flash("You are signed out.", "success")
     return redirect(url_for("main.index"))
@@ -110,3 +125,18 @@ def _safe_next(target: str | None) -> str:
     if target and target.startswith("/") and not target.startswith("//"):
         return target
     return url_for("auth.account")
+
+
+_login_attempts: dict[str, int] = {}
+
+
+def _note_failed_login(email: str) -> None:
+    key = (email or "").strip().lower()
+    _login_attempts[key] = _login_attempts.get(key, 0) + 1
+
+
+def _login_blocked(email: str) -> bool:
+    from flask import current_app
+
+    key = (email or "").strip().lower()
+    return _login_attempts.get(key, 0) >= current_app.config["LOGIN_MAX_ATTEMPTS"]

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Pay — QueueLess{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <h1>Mock online payment</h1>
+  <p>Amount ₹{{ "%.2f"|format(order.total) }}. No card number, CVV, or UPI PIN is asked for or stored.</p>
+  <form method="post" action="{{ url_for('payments.mock_success', order_id=order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-ql" type="submit">Mark payment successful</button>
+  </form>
+  <form class="mt-2" method="post" action="{{ url_for('payments.mock_failure', order_id=order.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="nav-text-button" type="submit">Mark payment failed</button>
+  </form>
+</section>
+{% endblock %}

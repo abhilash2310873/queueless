@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Order — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <p class="eyebrow">{{ order.stall.name }}</p>
+  <h1>{{ order.queue_number or "Payment pending" }}</h1>
+  <ol>
+    {% for step in ["PENDING", "ACCEPTED", "PREPARING", "READY", "COLLECTED"] %}
+      <li>{% if order.status == step %}<strong>{{ step }}</strong>{% else %}{{ step }}{% endif %}</li>
+    {% endfor %}
+  </ol>
+  <p>Status: {{ order.status }}. Payment: {{ order.payment.status if order.payment else "—" }}.</p>
+  {% if snapshot %}
+    <p>Queue position {{ snapshot.position }}. Orders ahead {{ snapshot.orders_ahead }}. Estimated wait {{ snapshot.estimated_wait_minutes }} minutes.</p>
+  {% endif %}
+  {% if delay %}<p>⚠ {{ delay }}</p>{% endif %}
+  {% if order.payment and order.payment.status == "CASH_PENDING" %}<p>PAYMENT PENDING until the stall records your cash.</p>{% endif %}
+  {% if token %}
+    <img alt="Pickup QR" src="{{ url_for('orders.qr', order_id=order.id) }}">
+  {% endif %}
+  {% if order.status == "PENDING" and order.user_id == current_user.id %}
+    <form method="post" action="{{ url_for('student.cancel', order_id=order.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-ql" type="submit">Cancel order</button>
+    </form>
+  {% endif %}
+  {% if order.status == "COLLECTED" and order.review is none and order.user_id == current_user.id %}
+    <form method="post" action="{{ url_for('student.review', order_id=order.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Rating <input name="rating" type="number" min="1" max="5" required></label>
+      <input class="form-control" name="text" placeholder="Optional review">
+      <button class="btn btn-ql" type="submit">Save review</button>
+    </form>
+  {% endif %}
+</section>
+<script>
+  setInterval(function () {
+    fetch("{{ url_for('orders.status', order_id=order.id) }}").then(function (response) { return response.json(); }).then(function () { location.reload(); });
+  }, 15000);
+</script>
+{% endblock %}

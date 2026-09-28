@@ -157,3 +157,76 @@ def remove_food(stall_id: int, food_id: int):
     delete_food_item(current_user, item)
     flash("Food removed from the menu.", "success")
     return redirect(url_for("owner.menu", stall_id=stall.id))
+
+
+@owner_bp.route("/orders")
+@roles_required(Role.OWNER)
+def orders():
+    stall = current_user.owned_stall
+    rows = []
+    if stall is not None:
+        from app.models import Order
+
+        rows = Order.query.filter_by(stall_id=stall.id).order_by(Order.created_at.desc()).all()
+    from app.analytics.services import owner_summary
+    from app.queue.predictor import demand_level
+
+    summary = owner_summary(stall) if stall else None
+    demand = demand_level(stall.id) if stall else None
+    return render_template("owner/orders.html", stall=stall, orders=rows, summary=summary, demand=demand)
+
+
+@owner_bp.route("/orders/<order_id>/<action>", methods=["POST"])
+@roles_required(Role.OWNER)
+def order_action(order_id: str, action: str):
+    from app.extensions import db
+    from app.models import Order, OrderStatus
+    from app.orders.services import OrderError, change_status, collect_with_token, mark_cash_paid
+
+    stall = current_user.owned_stall
+    order = db.session.get(Order, order_id)
+    if stall is None or order is None or order.stall_id != stall.id:
+        abort(403)
+    mapping = {
+        "accept": OrderStatus.ACCEPTED,
+        "preparing": OrderStatus.PREPARING,
+        "ready": OrderStatus.READY,
+        "reject": OrderStatus.REJECTED,
+    }
+    try:
+        if action == "cash":
+            mark_cash_paid(order, current_user.id)
+        elif action == "collect":
+            collect_with_token(request.form.get("token", ""), stall.id, current_user.id)
+        elif action in mapping:
+            change_status(order, mapping[action], current_user.id)
+        else:
+            abort(404)
+    except OrderError as exc:
+        flash(str(exc), "danger")
+    else:
+        flash("Order updated.", "success")
+    return redirect(url_for("owner.orders"))
+
+
+@owner_bp.route("/slots", methods=["POST"])
+@roles_required(Role.OWNER)
+def add_slot():
+    from datetime import datetime
+
+    from app.extensions import db
+    from app.models import PickupSlot
+
+    stall = current_user.owned_stall
+    if stall is None:
+        abort(403)
+    start = datetime.strptime(request.form.get("start_time", ""), "%H:%M").time()
+    end = datetime.strptime(request.form.get("end_time", ""), "%H:%M").time()
+    maximum = request.form.get("max_orders", type=int) or 1
+    if start >= end or maximum < 1:
+        flash("Enter a valid slot.", "danger")
+    else:
+        db.session.add(PickupSlot(stall_id=stall.id, start_time=start, end_time=end, max_orders=maximum))
+        db.session.commit()
+        flash("Pickup slot added.", "success")
+    return redirect(url_for("owner.home"))

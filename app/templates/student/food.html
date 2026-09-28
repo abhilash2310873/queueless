@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }} — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <p class="eyebrow">{{ item.stall.food_court.name }} · {{ item.stall.name }}</p>
+  <h1>{{ item.name }}</h1>
+  <p>{{ item.description }}</p>
+  <p>₹{{ "%.2f"|format(item.price) }} · {{ item.prep_time_minutes }} min · stock {{ item.stock_quantity }}</p>
+  <p><span class="status-badge">{{ item.availability_label }}</span> · {{ "Vegetarian" if item.is_vegetarian else "Non-vegetarian" }}</p>
+  {% if item.availability_label == 'AVAILABLE' and current_user.is_authenticated %}
+    <form method="post" action="{{ url_for('student.cart_add') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="food_id" value="{{ item.id }}">
+      <label>Quantity <input class="form-control" name="quantity" value="1" type="number" min="1"></label>
+      <button class="btn btn-ql mt-2" type="submit">Add to cart</button>
+    </form>
+    <form class="mt-3" method="post" action="{{ url_for('student.favorites') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="target_type" value="food">
+      <input type="hidden" name="target_id" value="{{ item.id }}">
+      <button class="nav-text-button" type="submit">Favorite this food</button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

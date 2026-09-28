@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Orders — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <h1>Your orders</h1>
+  {% for order in orders %}
+    <p><a href="{{ url_for('orders.detail', order_id=order.id) }}">{{ order.queue_number or order.id[:8] }}</a>
+      {{ order.created_at }} · {{ order.stall.name }} · ₹{{ "%.2f"|format(order.total) }} · {{ order.payment_method }} · {{ order.payment.status }} · {{ order.status }}</p>
+    <form class="inline-form" method="post" action="{{ url_for('student.reorder', order_id=order.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="nav-text-button" type="submit">Order again</button>
+    </form>
+  {% else %}
+    <p>No orders yet.</p>
+  {% endfor %}
+  <p><a href="{{ url_for('student.stats') }}">Your spending</a></p>
+</section>
+{% endblock %}

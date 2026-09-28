@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Cart — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <h1>Cart</h1>
+  <p>A cart holds food from one stall so the queue stays attached to that kitchen.</p>
+  {% for problem in problems %}<p class="field-error">{{ problem }}</p>{% endfor %}
+  {% for line in cart.items %}
+    <form class="mb-2" method="post" action="{{ url_for('student.cart_update') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="food_id" value="{{ line.food_id }}">
+      <strong>{{ line.food.name }}</strong> ₹{{ "%.2f"|format(line.food.price) }}
+      <input name="quantity" type="number" min="0" value="{{ line.quantity }}" style="width:4rem">
+      <button class="btn btn-ql btn-sm" type="submit">Update</button>
+    </form>
+  {% else %}
+    <p>Your cart is empty.</p>
+  {% endfor %}
+  <p>Total ₹{{ "%.2f"|format(total) }}</p>
+  {% if cart.items %}
+    <a class="btn btn-ql" href="{{ url_for('student.checkout') }}">Checkout</a>
+    <form class="inline-form" method="post" action="{{ url_for('student.cart_clear') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="nav-text-button" type="submit">Clear cart</button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

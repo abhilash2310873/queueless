@@ -23,13 +23,19 @@
           QueueLess
         </a>
         <div class="nav-actions">
-          {% if current_user.is_authenticated %}
-            <a href="{{ url_for('auth.account') }}">{{ current_user.name }}</a>
+            <a href="{{ url_for('student.browse') }}">Browse</a>
+            {% if current_user.is_authenticated %}
+            {% if current_user.role == 'student' %}
+              <a href="{{ url_for('student.cart') }}">Cart</a>
+              <a href="{{ url_for('student.history') }}">Orders</a>
+            {% endif %}
             {% if current_user.role == 'admin' %}
+              <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
               <a href="{{ url_for('admin.courts') }}">Courts</a>
               <a href="{{ url_for('admin.users') }}">Users</a>
             {% elif current_user.role == 'owner' %}
               <a href="{{ url_for('owner.home') }}">My stall</a>
+              <a href="{{ url_for('owner.orders') }}">Orders</a>
               {% if current_user.owned_stall %}
                 <a href="{{ url_for('owner.menu', stall_id=current_user.owned_stall.id) }}">Menu</a>
               {% endif %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Stall orders — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <h1>Orders</h1>
+  {% if summary %}
+    <p>Today {{ summary.orders_today }}. Preparing {{ summary.preparing }}. Ready {{ summary.ready }}. Revenue ₹{{ summary.revenue_today }}.</p>
+    {% if demand %}<p>Demand this hour: {{ demand.level }}. {{ demand.note }}</p>{% endif %}
+    <canvas id="hours" height="80"></canvas>
+  {% endif %}
+  <form class="row g-2 my-3" method="post" action="{{ url_for('owner.add_slot') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-auto"><input class="form-control" name="start_time" placeholder="12:00" required></div>
+    <div class="col-auto"><input class="form-control" name="end_time" placeholder="12:15" required></div>
+    <div class="col-auto"><input class="form-control" name="max_orders" value="10" required></div>
+    <div class="col-auto"><button class="btn btn-ql" type="submit">Add pickup slot</button></div>
+  </form>
+  {% for order in orders %}
+    <article class="food-card mb-3">
+      <h2>{{ order.queue_number or "Unpaid online" }} · {{ order.status }}</h2>
+      <p>{{ order.user.name }} · ₹{{ "%.2f"|format(order.total) }} · {{ order.payment.status }}</p>
+      {% for item in order.items %}<p>{{ item.quantity }} × {{ item.name }}</p>{% endfor %}
+      {% for action, label in [("cash","Mark cash paid"), ("accept","Accept"), ("preparing","Preparing"), ("ready","Ready"), ("reject","Reject")] %}
+        <form class="inline-form" method="post" action="{{ url_for('owner.order_action', order_id=order.id, action=action) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="nav-text-button" type="submit">{{ label }}</button>
+        </form>
+      {% endfor %}
+      <form method="post" action="{{ url_for('owner.order_action', order_id=order.id, action='collect') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input class="form-control" name="token" placeholder="Paste pickup token">
+        <button class="btn btn-ql mt-2" type="submit">Verify QR token</button>
+      </form>
+    </article>
+      {% else %}
+        <p>No orders yet.</p>
+      {% endfor %}
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Checkout — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <h1>Checkout</h1>
+  {% if cart.stall %}
+    <p>{{ cart.stall.food_court.name }} · {{ cart.stall.name }}</p>
+  {% endif %}
+  {% for line in cart.items %}
+    <p>{{ line.quantity }} × {{ line.food.name }} — ₹{{ "%.2f"|format(line.food.price * line.quantity) }}</p>
+  {% endfor %}
+  <p>Subtotal ₹{{ "%.2f"|format(subtotal) }}. Tax is {{ config.TAX_RATE }} so the total matches the subtotal unless tax is configured.</p>
+  {% if recommendation %}
+    <p>Recommended pickup slot: {{ recommendation.slot.label }}. {{ recommendation.reason }}</p>
+  {% endif %}
+  <form method="post">
+    {{ csrf_token() and '' }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Pickup slot</label>
+    <select class="form-control mb-3" name="slot_id" required>
+      {% for slot in slots %}
+        <option value="{{ slot.id }}">{{ slot.label }} — {% if slot.spaces_left == 0 %}FULL{% else %}{{ slot.spaces_left }} spaces remaining{% endif %}</option>
+      {% endfor %}
+    </select>
+    <label>Payment</label>
+    <select class="form-control mb-3" name="method">
+      <option value="CASH">Pay at cash counter</option>
+      <option value="ONLINE">Online payment</option>
+    </select>
+    <button class="btn btn-ql" type="submit" {% if problems or not slots %}disabled{% endif %}>Place order</button>
+  </form>
+</section>
+{% endblock %}

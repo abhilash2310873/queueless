@@ -108,4 +108,4 @@ A stall owner opens Menu, adds a food item (name, price, preparation time, stock
 
 ## What is not here yet
 
-Cart, checkout, queues, payments, and QR pickup are later phases. Stock is reduced with one conditional `UPDATE` in `app/utils/stock.py` so two orders cannot take the last item. See `docs/concurrency.md`. Checkout will call that function in a later phase. See `docs/phase-reports/` after each phase.
+Cart, checkout, cash and mock online payment, queue numbers, signed QR pickup, reviews, and dashboards are in place. Stock is reduced with one conditional `UPDATE` in `app/utils/stock.py`. See `docs/concurrency.md`, `docs/queue-algorithm.md`, and `docs/demo-script.md`.

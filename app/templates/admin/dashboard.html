@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Admin — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  {% include "admin/_nav.html" %}
+  <h1>Platform</h1>
+  <p>Students {{ summary.students }}. Owners {{ summary.owners }}. Orders {{ summary.orders }}. Revenue ₹{{ summary.revenue }}.</p>
+  <canvas id="hours" height="80"></canvas>
+  <h2>Activity</h2>
+  {% for log in logs %}<p>{{ log.action }} · {{ log.detail }}</p>{% else %}<p>No activity yet.</p>{% endfor %}
+  <h2>Complaints</h2>
+  {% for row in complaints %}<p>{{ row.message }}</p>{% else %}<p>No complaints.</p>{% endfor %}
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById("hours"), {type:"bar", data:{labels:[...Array(24).keys()], datasets:[{label:"Orders by hour", data:{{ hours }}}]}});
+</script>
+{% endblock %}

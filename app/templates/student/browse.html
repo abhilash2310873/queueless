@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Browse — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <h1>Find food</h1>
+  <form class="row g-2 mb-4" method="get">
+    <div class="col-md-3"><input class="form-control" name="q" value="{{ request.args.get('q','') }}" placeholder="Search by name"></div>
+    <div class="col-md-2">
+      <select class="form-control" name="category">
+        <option value="">Category</option>
+        {% for category in categories %}<option value="{{ category.id }}" {% if request.args.get('category') == category.id|string %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select class="form-control" name="diet">
+        <option value="">Diet</option>
+        <option value="veg" {% if request.args.get('diet') == 'veg' %}selected{% endif %}>Vegetarian</option>
+        <option value="nonveg" {% if request.args.get('diet') == 'nonveg' %}selected{% endif %}>Non-vegetarian</option>
+      </select>
+    </div>
+    <div class="col-md-2"><input class="form-control" name="max_price" value="{{ request.args.get('max_price','') }}" placeholder="Max price"></div>
+    <div class="col-md-2">
+      <select class="form-control" name="sort">
+        <option value="name">Name</option>
+        <option value="price_asc">Price low-high</option>
+        <option value="price_desc">Price high-low</option>
+        <option value="rating">Rating</option>
+      </select>
+    </div>
+    <div class="col-md-1"><button class="btn btn-ql" type="submit">Go</button></div>
+    <div class="col-12"><label><input type="checkbox" name="available" value="1" {% if request.args.get('available') == '1' %}checked{% endif %}> Available only</label></div>
+  </form>
+  <div class="food-grid">
+    {% for item in page.items %}
+      <article class="food-card">
+        <p class="eyebrow">{{ item.stall.name }} · {{ item.category.name }}</p>
+        <h2><a href="{{ url_for('student.food_detail', food_id=item.id) }}">{{ item.name }}</a></h2>
+        <p class="price">₹{{ "%.2f"|format(item.price) }} · {{ item.prep_time_minutes }} min</p>
+        <p><span class="status-badge">{{ item.availability_label }}</span></p>
+        {% if item.availability_label == 'AVAILABLE' and current_user.is_authenticated %}
+          <form method="post" action="{{ url_for('student.cart_add') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="food_id" value="{{ item.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button class="btn btn-ql" type="submit">Add to cart</button>
+          </form>
+        {% elif item.availability_label != 'AVAILABLE' %}
+          <button class="btn btn-ql" type="button" disabled>{{ item.availability_label }}</button>
+        {% endif %}
+      </article>
+    {% else %}
+      <p>No food matches those filters.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

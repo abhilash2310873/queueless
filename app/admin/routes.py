@@ -305,3 +305,18 @@ def remove_category(category_id: int):
 def food():
     items = FoodItem.query.order_by(FoodItem.name.asc()).all()
     return render_template("admin/food.html", items=items)
+
+
+@admin_bp.route("/dashboard")
+@roles_required(Role.ADMIN)
+def dashboard():
+    from app.analytics.services import admin_summary, orders_by_hour
+    from app.models import ActivityLog, Complaint
+
+    return render_template(
+        "admin/dashboard.html",
+        summary=admin_summary(),
+        hours=orders_by_hour(),
+        logs=ActivityLog.query.order_by(ActivityLog.id.desc()).limit(20).all(),
+        complaints=Complaint.query.order_by(Complaint.id.desc()).limit(20).all(),
+    )
