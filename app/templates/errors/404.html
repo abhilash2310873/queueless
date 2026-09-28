@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found — QueueLess{% endblock %}
+{% block content %}
+<section class="error-panel container">
+  <p class="eyebrow">404</p>
+  <h1>Page not found</h1>
+  <p>That address is not part of QueueLess.</p>
+  <a class="btn btn-ql" href="{{ url_for('main.index') }}">Back to home</a>
+</section>
+{% endblock %}

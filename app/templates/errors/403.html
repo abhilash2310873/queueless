@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Not allowed — QueueLess{% endblock %}
+{% block content %}
+<section class="error-panel container">
+  <p class="eyebrow">403</p>
+  <h1>You are not allowed to open this page</h1>
+  <p>Your account does not have access to this part of QueueLess.</p>
+  <a class="btn btn-ql" href="{{ url_for('main.index') }}">Back to home</a>
+</section>
+{% endblock %}

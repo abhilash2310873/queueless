@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}QueueLess — Order Smart. Skip the Queue.{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">Campus food courts</p>
+    <h1>Order Smart.<br>Skip the Queue.</h1>
+    <p class="lead">
+      QueueLess is a multi-food-court ordering system for colleges.
+      Students pick a stall, choose a pickup slot, and collect food with a queue token
+      instead of standing in a physical line.
+    </p>
+  </div>
+</section>
+
+<section class="container feature-grid">
+  <article class="feature-card">
+    <i class="bi bi-shop" aria-hidden="true"></i>
+    <h2>Several courts, one place</h2>
+    <p>Each food court and stall is its own record. A stall owner only manages the stall they are assigned.</p>
+  </article>
+  <article class="feature-card">
+    <i class="bi bi-clock-history" aria-hidden="true"></i>
+    <h2>A real queue, not a guess</h2>
+    <p>Waiting time comes from orders ahead, preparation time, and how many counters are working.</p>
+  </article>
+  <article class="feature-card">
+    <i class="bi bi-qr-code" aria-hidden="true"></i>
+    <h2>Pickup you can verify</h2>
+    <p>Cash or a mock online payment, then a signed QR ticket the stall scans once.</p>
+  </article>
+</section>
+{% endblock %}

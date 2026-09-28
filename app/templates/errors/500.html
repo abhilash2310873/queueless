@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong — QueueLess{% endblock %}
+{% block content %}
+<section class="error-panel container">
+  <p class="eyebrow">500</p>
+  <h1>Something went wrong</h1>
+  <p>The problem was logged. Please try again in a moment.</p>
+  <a class="btn btn-ql" href="{{ url_for('main.index') }}">Back to home</a>
+</section>
+{% endblock %}
