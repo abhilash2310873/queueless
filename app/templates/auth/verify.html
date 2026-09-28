@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Verify email — QueueLess{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <p class="eyebrow">College email</p>
+  <h1>Verify your account</h1>
+  <p>Enter the 6-digit code. While mail is suppressed, the code and link are printed in the terminal that is running Flask.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      <label class="form-label" for="email">College email</label>
+      {{ form.email(class="form-control", id="email") }}
+      {% for error in form.email.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="code">Verification code</label>
+      {{ form.code(class="form-control", id="code", inputmode="numeric") }}
+      {% for error in form.code.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    {{ form.submit(class="btn btn-ql") }}
+  </form>
+  <form class="mt-4" method="post" action="{{ url_for('auth.resend') }}">
+    {{ resend_form.hidden_tag() }}
+    <label class="form-label" for="resend-email">Need a new code?</label>
+    {{ resend_form.email(class="form-control mb-2", id="resend-email") }}
+    {{ resend_form.submit(class="btn btn-ql") }}
+  </form>
+</section>
+{% endblock %}

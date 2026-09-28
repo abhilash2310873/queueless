@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Your account — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <p class="eyebrow">Signed in</p>
+  <h1>{{ current_user.name }}</h1>
+  <p>This page shows only the account you logged in with.</p>
+  <dl class="row mb-0">
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">{{ current_user.email }}</dd>
+    <dt class="col-sm-3">Role</dt>
+    <dd class="col-sm-9">{{ current_user.role }}</dd>
+    {% if current_user.student_id %}
+      <dt class="col-sm-3">Roll number</dt>
+      <dd class="col-sm-9">{{ current_user.student_id }}</dd>
+    {% endif %}
+  </dl>
+</section>
+{% endblock %}

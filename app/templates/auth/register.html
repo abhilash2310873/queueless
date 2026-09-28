@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Register — QueueLess{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <p class="eyebrow">Student account</p>
+  <h1>Create your account</h1>
+  <p>Use your college email. Other addresses are rejected.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      <label class="form-label" for="name">Full name</label>
+      {{ form.name(class="form-control", id="name") }}
+      {% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="email">College email</label>
+      {{ form.email(class="form-control", id="email", placeholder="you@college.edu") }}
+      {% for error in form.email.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="student_id">Roll number</label>
+      {{ form.student_id(class="form-control", id="student_id") }}
+      {% for error in form.student_id.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="password">Password</label>
+      {{ form.password(class="form-control", id="password") }}
+      {% for error in form.password.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="confirm_password">Confirm password</label>
+      {{ form.confirm_password(class="form-control", id="confirm_password") }}
+      {% for error in form.confirm_password.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+    {{ form.submit(class="btn btn-ql") }}
+  </form>
+  <p class="mt-3 mb-0">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</section>
+{% endblock %}

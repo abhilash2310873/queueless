@@ -93,14 +93,78 @@ h1, h2, .navbar-brand {
   color: #14211b;
 }
 
-.theme-toggle {
+.navbar .container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.2rem;
+}
+
+.nav-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.nav-actions a,
+.nav-text-button {
+  color: var(--ql-ink);
+  text-decoration: none;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.nav-actions form {
+  margin: 0;
+}
+
+.theme-toggle {
   border: 1px solid var(--ql-line);
   background: var(--ql-surface);
   color: var(--ql-ink);
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 999px;
+}
+
+.form-panel,
+.data-panel {
+  background: var(--ql-surface);
+  border: 1px solid var(--ql-line);
+  border-radius: 1.2rem;
+  box-shadow: var(--ql-shadow);
+}
+
+.form-panel {
+  max-width: 34rem;
+  margin: 2.5rem auto 4rem;
+  padding: 1.5rem;
+}
+
+.form-panel h1,
+.data-panel h1 {
+  font-size: 2.3rem;
+}
+
+.field-error {
+  color: #9b3412;
+  font-size: 0.92rem;
+  margin-top: 0.25rem;
+}
+
+.data-panel {
+  margin: 2.5rem auto 4rem;
+  padding: 1.5rem;
+}
+
+.form-control {
+  background: var(--ql-bg);
+  border-color: var(--ql-line);
+  color: var(--ql-ink);
 }
 
 .hero {

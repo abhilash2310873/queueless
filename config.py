@@ -49,6 +49,8 @@ class BaseConfig:
     RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "")
 
     WTF_CSRF_ENABLED = True
+    VERIFICATION_CODE_MINUTES = 30
+    VERIFICATION_MAX_ATTEMPTS = 5
 
 
 class DevelopmentConfig(BaseConfig):

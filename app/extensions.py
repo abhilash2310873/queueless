@@ -12,11 +12,18 @@ login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
 
-# The login page blueprint is added in the authentication phase.
+login_manager.login_view = "auth.login"
+login_manager.login_message = "Log in to continue."
 login_manager.login_message_category = "warning"
 
 
 @login_manager.user_loader
-def load_user(_user_id: str):
-    """Turn a session user id into a user. Accounts do not exist yet, so this stays anonymous."""
-    return None
+def load_user(user_id: str):
+    """Load the user stored in the session. Unknown ids stay signed out."""
+    from app.models import User
+
+    try:
+        return db.session.get(User, int(user_id))
+    except (TypeError, ValueError):
+        # A damaged session cookie should sign the user out, not crash the page.
+        return None

@@ -4,7 +4,7 @@
 
 QueueLess is a campus food-court ordering and queue system. Students browse stalls, place an order, receive a queue number, and collect food with a signed QR ticket. Stall staff run their own queue. A super admin manages the platform.
 
-This repository is built in phases. The current phase is the application foundation: configuration, the Flask app factory, the database connection, and the base page layout. Ordering, accounts, and queues are added in later phases.
+This repository is built in phases. Accounts, college-email verification, and role checks are in place. Food courts, menus, carts, queues, and payments come in later phases.
 
 ## Problem
 
@@ -59,7 +59,7 @@ Copy `.env.example` to `.env`. The `.env` file is gitignored.
 | `DATABASE_URL` | Leave empty to use `instance/queueless.db`. |
 | `STUDENT_EMAIL_DOMAIN` | College domain students must register with, for example `@college.edu`. |
 | `ALLOW_STUDENT_EMAIL_SUBDOMAINS` | `False` means the email domain must match exactly. `True` also allows subdomains such as `cs.college.edu`. |
-| `MAIL_SUPPRESS_SEND` | `True` in development. Mail is not sent to a real server. Later phases print the verification link in the terminal. That is intentional, not a bug. |
+| `MAIL_SUPPRESS_SEND` | `True` in development. Verification mail is not sent. The code and link are printed in the Flask terminal. That is intentional, not a bug. |
 | `PAYMENT_PROVIDER` | `mock` until a real gateway is configured. |
 
 Do not put card numbers, UPI PINs, or real payment secrets in the project.
@@ -74,6 +74,24 @@ python -m pytest
 
 The same command works on macOS and Linux.
 
+## Accounts
+
+Students register at http://127.0.0.1:5000/auth/register with an email on `STUDENT_EMAIL_DOMAIN`. `student@gmail.com` is rejected when the domain is `@college.edu`.
+
+Set `ALLOW_STUDENT_EMAIL_SUBDOMAINS=False` to require an exact domain match. Set it to `True` to also allow subdomains, such as `x@cs.college.edu` when the domain is `@college.edu`.
+
+With `MAIL_SUPPRESS_SEND=True`, open the terminal running Flask after registration. It prints a 6-digit code and a link. Five wrong codes lock verification for that account. The code and link are stored only as hashes.
+
+After `flask --app run.py db upgrade`, create the local super admin:
+
+```bat
+flask --app run.py create-admin
+```
+
+Development only: `admin@example.local` / `Campus@123`. The command refuses to run when the app is in production. Do not use this password outside your own machine.
+
+A student or stall owner who opens http://127.0.0.1:5000/admin/users receives 403. Hiding the link is not the protection; the view checks the role.
+
 ## What is not here yet
 
-Accounts, food courts, menus, cart, checkout, queues, payments, and QR pickup are later phases. See `docs/phase-reports/` after each phase.
+Food courts, stalls, menus, cart, checkout, queues, payments, and QR pickup are later phases. See `docs/phase-reports/` after each phase.

@@ -22,9 +22,24 @@
           <span class="brand-mark" aria-hidden="true">QL</span>
           QueueLess
         </a>
-        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch color theme">
-          <i class="bi bi-moon-stars"></i>
-        </button>
+        <div class="nav-actions">
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.account') }}">{{ current_user.name }}</a>
+            {% if current_user.role == 'admin' %}
+              <a href="{{ url_for('admin.users') }}">Users</a>
+            {% endif %}
+            <form method="post" action="{{ url_for('auth.logout') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="nav-text-button" type="submit">Log out</button>
+            </form>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}">Log in</a>
+            <a href="{{ url_for('auth.register') }}">Register</a>
+          {% endif %}
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch color theme">
+            <i class="bi bi-moon-stars"></i>
+          </button>
+        </div>
       </div>
     </nav>
   </header>
