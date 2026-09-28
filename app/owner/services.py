@@ -83,7 +83,8 @@ def create_food_item(
         price=payload["price"],
         prep_time_minutes=payload["prep_time_minutes"],
         stock_quantity=payload["stock_quantity"],
-        is_available=bool(is_available),
+        # Zero stock cannot stay on the menu as available.
+        is_available=bool(is_available) and payload["stock_quantity"] > 0,
         is_vegetarian=bool(is_vegetarian),
         image_path=store_image(image_file),
     )
@@ -116,7 +117,7 @@ def update_food_item(
     item.price = payload["price"]
     item.prep_time_minutes = payload["prep_time_minutes"]
     item.stock_quantity = payload["stock_quantity"]
-    item.is_available = bool(is_available)
+    item.is_available = bool(is_available) and payload["stock_quantity"] > 0
     item.is_vegetarian = bool(is_vegetarian)
     image = store_image(image_file)
     if image:
@@ -128,6 +129,8 @@ def update_food_item(
 def set_food_availability(user, item: FoodItem, is_available: bool) -> FoodItem:
     if item.stall.owner_id != user.id:
         abort(403)
+    if is_available and item.stock_quantity <= 0:
+        raise FoodError("Add stock before marking this item available.")
     item.is_available = bool(is_available)
     db.session.commit()
     return item

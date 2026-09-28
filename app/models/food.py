@@ -85,7 +85,7 @@ class FoodItem(db.Model):
     # Minutes a cook typically needs. Queue wait times will use this later.
     prep_time_minutes = db.Column(db.Integer, nullable=False)
     stock_quantity = db.Column(db.Integer, nullable=False, default=0)
-    # Manual flag. An owner can hide an item even when stock remains.
+    # Manual flag. Stock of zero forces this off in the stock UPDATE and in the edit form.
     is_available = db.Column(db.Boolean, nullable=False, default=True, index=True)
     is_vegetarian = db.Column(db.Boolean, nullable=False, default=True)
     rating = db.Column(db.Numeric(3, 2), nullable=False, default=Decimal("0.00"))
