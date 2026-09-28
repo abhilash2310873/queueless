@@ -203,6 +203,35 @@ h1, h2, .navbar-brand {
   color: var(--ql-primary);
 }
 
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.food-card {
+  background: var(--ql-bg);
+  border: 1px solid var(--ql-line);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.food-card img {
+  width: 100%;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.food-card h2 {
+  font-size: 1.35rem;
+}
+
+.food-card .price {
+  color: var(--ql-muted);
+}
+
 .hero {
   padding: 4.5rem 0 2rem;
 }

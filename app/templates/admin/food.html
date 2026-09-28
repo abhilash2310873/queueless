@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}All food — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  {% include "admin/_nav.html" %}
+  <p class="eyebrow">Super admin</p>
+  <h1>All food</h1>
+  <p>This list is read-only. Stall owners edit their own menus.</p>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Food</th>
+          <th>Stall</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Availability</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.stall.name }}</td>
+            <td>{{ item.category.name }}</td>
+            <td>₹{{ "%.2f"|format(item.price) }}</td>
+            <td>{{ item.stock_quantity }}</td>
+            <td><span class="status-badge">{{ item.availability_label }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">No food items yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

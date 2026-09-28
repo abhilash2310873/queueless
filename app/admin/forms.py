@@ -39,3 +39,9 @@ class OwnerForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=128)])
     stall_id = SelectField("Stall", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Create owner")
+
+
+class CategoryForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired(), Length(max=80)])
+    description = StringField("Description", validators=[Length(max=255)])
+    submit = SubmitField("Save category")

@@ -1,7 +1,7 @@
 """Create and update courts, stalls, and the owner accounts linked to them."""
 
 from app.extensions import db
-from app.models import FoodCourt, PlaceStatus, Role, Stall, User
+from app.models import FoodCategory, FoodCourt, PlaceStatus, Role, Stall, User
 from app.utils.uploads import UploadError, save_image
 
 
@@ -156,3 +156,35 @@ def store_image(file_storage):
         return save_image(file_storage)
     except UploadError as exc:
         raise PlaceError(str(exc)) from exc
+
+
+def create_category(name, description="") -> FoodCategory:
+    name = name.strip()
+    if not name:
+        raise PlaceError("Enter a category name.")
+    if FoodCategory.query.filter_by(name=name).first():
+        raise PlaceError("That category already exists.")
+    category = FoodCategory(name=name, description=(description or "").strip())
+    db.session.add(category)
+    db.session.commit()
+    return category
+
+
+def update_category(category: FoodCategory, name, description="") -> FoodCategory:
+    name = name.strip()
+    if not name:
+        raise PlaceError("Enter a category name.")
+    taken = FoodCategory.query.filter(FoodCategory.name == name, FoodCategory.id != category.id).first()
+    if taken:
+        raise PlaceError("That category already exists.")
+    category.name = name
+    category.description = (description or "").strip()
+    db.session.commit()
+    return category
+
+
+def delete_category(category: FoodCategory) -> None:
+    if category.food_items:
+        raise PlaceError("Remove or recategorise the food in this category first.")
+    db.session.delete(category)
+    db.session.commit()

@@ -8,6 +8,7 @@
     <p>An admin has not linked this account to a stall yet.</p>
   {% else %}
     <h1>{{ stall.name }}</h1>
+    {% include "owner/_nav.html" %}
     <p>{{ stall.food_court.name }} · {{ stall.food_court.location }}</p>
     <p>You can edit this stall only. Another owner's stall returns 403.</p>
     <form method="post" enctype="multipart/form-data" novalidate>

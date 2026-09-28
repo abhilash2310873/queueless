@@ -1,19 +1,22 @@
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from app.admin.forms import FoodCourtForm, OwnerForm, StallForm
+from app.admin.forms import CategoryForm, FoodCourtForm, OwnerForm, StallForm
 from app.admin.services import (
     PlaceError,
+    create_category,
     create_food_court,
     create_owner,
     create_stall,
+    delete_category,
     set_place_status,
     set_suspended,
+    update_category,
     update_food_court,
     update_stall,
 )
 from app.extensions import db
-from app.models import FoodCourt, PlaceStatus, Role, Stall, User
+from app.models import FoodCategory, FoodCourt, FoodItem, PlaceStatus, Role, Stall, User
 from app.utils.decorators import roles_required
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -246,3 +249,59 @@ def _apply_status(place) -> None:
     else:
         label = {PlaceStatus.OPEN: "Approved and open.", PlaceStatus.CLOSED: "Marked closed.", PlaceStatus.TEMPORARILY_CLOSED: "Marked temporarily closed."}
         flash(label[status], "success")
+
+
+@admin_bp.route("/categories", methods=["GET", "POST"])
+@roles_required(Role.ADMIN)
+def categories():
+    form = CategoryForm()
+    if form.validate_on_submit():
+        try:
+            create_category(form.name.data, form.description.data)
+        except PlaceError as exc:
+            flash(str(exc), "danger")
+        else:
+            flash("Category saved.", "success")
+            return redirect(url_for("admin.categories"))
+    rows = FoodCategory.query.order_by(FoodCategory.name.asc()).all()
+    return render_template("admin/categories.html", categories=rows, form=form)
+
+
+@admin_bp.route("/categories/<int:category_id>/edit", methods=["GET", "POST"])
+@roles_required(Role.ADMIN)
+def edit_category(category_id: int):
+    category = db.session.get(FoodCategory, category_id)
+    if category is None:
+        abort(404)
+    form = CategoryForm(obj=category) if request.method == "GET" else CategoryForm()
+    if form.validate_on_submit():
+        try:
+            update_category(category, form.name.data, form.description.data)
+        except PlaceError as exc:
+            flash(str(exc), "danger")
+        else:
+            flash("Category updated.", "success")
+            return redirect(url_for("admin.categories"))
+    return render_template("admin/category_form.html", form=form, category=category)
+
+
+@admin_bp.route("/categories/<int:category_id>/delete", methods=["POST"])
+@roles_required(Role.ADMIN)
+def remove_category(category_id: int):
+    category = db.session.get(FoodCategory, category_id)
+    if category is None:
+        abort(404)
+    try:
+        delete_category(category)
+    except PlaceError as exc:
+        flash(str(exc), "danger")
+    else:
+        flash("Category removed.", "success")
+    return redirect(url_for("admin.categories"))
+
+
+@admin_bp.route("/food")
+@roles_required(Role.ADMIN)
+def food():
+    items = FoodItem.query.order_by(FoodItem.name.asc()).all()
+    return render_template("admin/food.html", items=items)

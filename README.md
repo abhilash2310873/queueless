@@ -4,7 +4,7 @@
 
 QueueLess is a campus food-court ordering and queue system. Students browse stalls, place an order, receive a queue number, and collect food with a signed QR ticket. Stall staff run their own queue. A super admin manages the platform.
 
-This repository is built in phases. Accounts, food courts, stalls, and owner logins are in place. Menus, carts, queues, and payments come in later phases.
+This repository is built in phases. Accounts, food courts, stalls, owner logins, categories, and menus are in place. Cart, queues, and payments come in later phases.
 
 ## Problem
 
@@ -100,6 +100,12 @@ Create an owner from the Stalls page and pick the stall they run. That account c
 
 On Users, Suspend blocks the next login. Activate allows it again. An admin cannot suspend their own account.
 
+## Menus
+
+Admins create food categories at http://127.0.0.1:5000/admin/categories. Names such as Breakfast or Fast Food are rows in the database, not a hard-coded list.
+
+A stall owner opens Menu, adds a food item (name, price, preparation time, stock, vegetarian flag, photo), and can mark it available or unavailable. Unavailable food shows CURRENTLY UNAVAILABLE. Stock of 0 shows SOLD OUT. Another owner who opens that food's URL receives 403. Student browsing of the catalog is a later phase; until then the owner menu and the admin All food page are the places to inspect items.
+
 ## What is not here yet
 
-Menus, stock, cart, checkout, queues, payments, and QR pickup are later phases. See `docs/phase-reports/` after each phase.
+Cart, checkout, queues, payments, and QR pickup are later phases. Stock is stored on each item; the atomic checkout deduction that prevents overselling is Phase 5. See `docs/phase-reports/` after each phase.

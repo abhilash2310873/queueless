@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Categories — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  {% include "admin/_nav.html" %}
+  <p class="eyebrow">Super admin</p>
+  <h1>Food categories</h1>
+  <p>Names live in the database. Breakfast, Meals, and Snacks are examples, not hard-coded lists.</p>
+  <form class="mb-4" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label" for="{{ form.name.id }}">Name</label>
+        {{ form.name(class="form-control") }}
+      </div>
+      <div class="col-md-5">
+        <label class="form-label" for="{{ form.description.id }}">Description</label>
+        {{ form.description(class="form-control") }}
+      </div>
+      <div class="col-md-3">
+        {{ form.submit(class="btn btn-ql") }}
+      </div>
+    </div>
+    {% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+  </form>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Items</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+          <tr>
+            <td>{{ category.name }}</td>
+            <td>{{ category.description or "—" }}</td>
+            <td>{{ category.food_items|length }}</td>
+            <td class="action-cell">
+              <a href="{{ url_for('admin.edit_category', category_id=category.id) }}">Edit</a>
+              <form class="inline-form" method="post" action="{{ url_for('admin.remove_category', category_id=category.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="nav-text-button" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

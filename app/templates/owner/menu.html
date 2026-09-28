@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Menu — {{ stall.name }}{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <p class="eyebrow">Stall owner</p>
+  <h1>{{ stall.name }} menu</h1>
+  {% include "owner/_nav.html" %}
+  <p><a class="btn btn-ql" href="{{ url_for('owner.new_food', stall_id=stall.id) }}">Add food</a></p>
+  <div class="food-grid">
+    {% for item in items %}
+      <article class="food-card">
+        {% if item.image_path %}
+          <img src="{{ url_for('static', filename=item.image_path) }}" alt="">
+        {% endif %}
+        <p class="eyebrow">{{ item.category.name }} · {{ "Veg" if item.is_vegetarian else "Non-veg" }}</p>
+        <h2>{{ item.name }}</h2>
+        <p class="price">₹{{ "%.2f"|format(item.price) }} · {{ item.prep_time_minutes }} min · stock {{ item.stock_quantity }}</p>
+        <p><span class="status-badge">{{ item.availability_label }}</span></p>
+        <div class="action-cell">
+          <a href="{{ url_for('owner.edit_food', stall_id=stall.id, food_id=item.id) }}">Edit</a>
+          {% if item.is_available %}
+            <form class="inline-form" method="post" action="{{ url_for('owner.food_availability', stall_id=stall.id, food_id=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="is_available" value="0">
+              <button class="nav-text-button" type="submit">Mark unavailable</button>
+            </form>
+          {% else %}
+            <form class="inline-form" method="post" action="{{ url_for('owner.food_availability', stall_id=stall.id, food_id=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="is_available" value="1">
+              <button class="nav-text-button" type="submit">Mark available</button>
+            </form>
+          {% endif %}
+          <form class="inline-form" method="post" action="{{ url_for('owner.remove_food', stall_id=stall.id, food_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="nav-text-button" type="submit">Delete</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <p>No food on this menu yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

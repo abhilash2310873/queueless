@@ -30,6 +30,9 @@
               <a href="{{ url_for('admin.users') }}">Users</a>
             {% elif current_user.role == 'owner' %}
               <a href="{{ url_for('owner.home') }}">My stall</a>
+              {% if current_user.owned_stall %}
+                <a href="{{ url_for('owner.menu', stall_id=current_user.owned_stall.id) }}">Menu</a>
+              {% endif %}
             {% endif %}
             <form method="post" action="{{ url_for('auth.logout') }}">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

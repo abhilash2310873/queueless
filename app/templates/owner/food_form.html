@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — QueueLess{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <p class="eyebrow">{{ stall.name }}</p>
+  <h1>{{ heading }}</h1>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in (form.category_id, form.name, form.description, form.price, form.prep_time_minutes, form.stock_quantity, form.image) %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id }}">{{ field.label.text }}</label>
+        {{ field(class="form-control") }}
+        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    <div class="form-check mb-2">
+      {{ form.is_vegetarian(class="form-check-input", id="is_vegetarian") }}
+      <label class="form-check-label" for="is_vegetarian">{{ form.is_vegetarian.label.text }}</label>
+    </div>
+    <div class="form-check mb-3">
+      {{ form.is_available(class="form-check-input", id="is_available") }}
+      <label class="form-check-label" for="is_available">{{ form.is_available.label.text }}</label>
+    </div>
+    {{ form.submit(class="btn btn-ql") }}
+  </form>
+</section>
+{% endblock %}
