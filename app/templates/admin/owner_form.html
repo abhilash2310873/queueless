@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}New owner — QueueLess{% endblock %}
+{% block content %}
+<section class="form-panel">
+  <p class="eyebrow">Super admin</p>
+  <h1>Create owner</h1>
+  <p>This account is linked to one stall. Staff email does not have to be a college address. The owner can log in immediately.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in (form.name, form.email, form.password, form.stall_id) %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id }}">{{ field.label.text }}</label>
+        {{ field(class="form-control") }}
+        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+      </div>
+    {% endfor %}
+    {{ form.submit(class="btn btn-ql") }}
+  </form>
+</section>
+{% endblock %}

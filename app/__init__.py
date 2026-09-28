@@ -40,10 +40,12 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.admin import admin_bp
     from app.auth import auth_bp
     from app.main import main_bp
+    from app.owner import owner_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(owner_bp)
     _register_commands(app)
     _register_error_handlers(app)
     return app

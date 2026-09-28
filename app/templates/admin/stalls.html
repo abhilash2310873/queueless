@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Stalls — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  {% include "admin/_nav.html" %}
+  <p class="eyebrow">Super admin</p>
+  <h1>Stalls</h1>
+  <p>
+    <a class="btn btn-ql" href="{{ url_for('admin.new_stall') }}">New stall</a>
+    <a class="btn btn-ql" href="{{ url_for('admin.new_owner') }}">Create owner</a>
+  </p>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Stall</th>
+          <th>Food court</th>
+          <th>Owner</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for stall in stalls %}
+          <tr>
+            <td>{{ stall.name }}</td>
+            <td>{{ stall.food_court.name }}</td>
+            <td>{{ stall.owner.email if stall.owner else "Unassigned" }}</td>
+            <td><span class="status-badge">{{ stall.status.replace("_", " ") }}</span></td>
+            <td class="action-cell">
+              <a href="{{ url_for('admin.edit_stall', stall_id=stall.id) }}">Edit</a>
+              {% if stall.status != statuses.OPEN %}
+                <form class="inline-form" method="post" action="{{ url_for('admin.stall_status', stall_id=stall.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="status" value="{{ statuses.OPEN }}">
+                  <button class="nav-text-button" type="submit">Approve</button>
+                </form>
+              {% endif %}
+              {% if stall.status != statuses.CLOSED %}
+                <form class="inline-form" method="post" action="{{ url_for('admin.stall_status', stall_id=stall.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="status" value="{{ statuses.CLOSED }}">
+                  <button class="nav-text-button" type="submit">Reject</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No stalls yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

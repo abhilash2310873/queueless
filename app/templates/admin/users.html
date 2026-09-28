@@ -2,9 +2,10 @@
 {% block title %}Users — QueueLess{% endblock %}
 {% block content %}
 <section class="container data-panel">
+  {% include "admin/_nav.html" %}
   <p class="eyebrow">Super admin</p>
   <h1>Users</h1>
-  <p>Students and stall owners cannot open this page. Owner accounts and suspension controls come later.</p>
+  <p>Suspend blocks login. You cannot suspend the account you are using.</p>
   <div class="table-responsive">
     <table class="table align-middle mb-0">
       <thead>
@@ -12,8 +13,9 @@
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
-          <th>Verified</th>
+          <th>Stall</th>
           <th>Suspended</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -22,11 +24,26 @@
             <td>{{ account.name }}</td>
             <td>{{ account.email }}</td>
             <td>{{ account.role }}</td>
-            <td>{{ "Yes" if account.email_verified else "No" }}</td>
+            <td>{{ account.owned_stall.name if account.owned_stall else "—" }}</td>
             <td>{{ "Yes" if account.is_suspended else "No" }}</td>
+            <td>
+              {% if account.id != current_user.id %}
+                {% if account.is_suspended %}
+                  <form class="inline-form" method="post" action="{{ url_for('admin.activate_user', user_id=account.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-ql btn-sm" type="submit">Activate</button>
+                  </form>
+                {% else %}
+                  <form class="inline-form" method="post" action="{{ url_for('admin.suspend_user', user_id=account.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-ql btn-sm" type="submit">Suspend</button>
+                  </form>
+                {% endif %}
+              {% endif %}
+            </td>
           </tr>
         {% else %}
-          <tr><td colspan="5">No accounts yet.</td></tr>
+          <tr><td colspan="6">No accounts yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

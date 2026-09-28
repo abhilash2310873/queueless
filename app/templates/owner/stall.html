@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My stall — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  <p class="eyebrow">Stall owner</p>
+  {% if stall is none %}
+    <h1>No stall assigned</h1>
+    <p>An admin has not linked this account to a stall yet.</p>
+  {% else %}
+    <h1>{{ stall.name }}</h1>
+    <p>{{ stall.food_court.name }} · {{ stall.food_court.location }}</p>
+    <p>You can edit this stall only. Another owner's stall returns 403.</p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+      {% for field in (form.name, form.description, form.location, form.contact, form.opening_time, form.closing_time, form.status, form.image) %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id }}">{{ field.label.text }}</label>
+          {{ field(class="form-control") }}
+          {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+      {% endfor %}
+      {{ form.submit(class="btn btn-ql") }}
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

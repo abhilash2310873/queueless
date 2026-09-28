@@ -156,15 +156,51 @@ h1, h2, .navbar-brand {
   margin-top: 0.25rem;
 }
 
+.form-control {
+  background: var(--ql-bg);
+  border-color: var(--ql-line);
+  color: var(--ql-ink);
+}
+
 .data-panel {
   margin: 2.5rem auto 4rem;
   padding: 1.5rem;
 }
 
-.form-control {
-  background: var(--ql-bg);
-  border-color: var(--ql-line);
-  color: var(--ql-ink);
+.inline-form {
+  display: inline;
+}
+
+.admin-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.admin-links a {
+  color: var(--ql-primary);
+}
+
+.status-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  background: var(--ql-primary-soft);
+  color: var(--ql-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.action-cell {
+  white-space: nowrap;
+}
+
+.action-cell a {
+  margin-right: 0.6rem;
+  font-weight: 600;
+  color: var(--ql-primary);
 }
 
 .hero {

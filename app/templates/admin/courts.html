@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Food courts — QueueLess{% endblock %}
+{% block content %}
+<section class="container data-panel">
+  {% include "admin/_nav.html" %}
+  <p class="eyebrow">Super admin</p>
+  <h1>Food courts</h1>
+  <p><a class="btn btn-ql" href="{{ url_for('admin.new_court') }}">New food court</a></p>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Hours</th>
+          <th>Status</th>
+          <th>Court owner</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for court in courts %}
+          <tr>
+            <td>{{ court.name }}</td>
+            <td>{{ court.location }}</td>
+            <td>{{ court.opening_time.strftime("%H:%M") }}–{{ court.closing_time.strftime("%H:%M") }}</td>
+            <td><span class="status-badge">{{ court.status.replace("_", " ") }}</span></td>
+            <td>{{ court.owner.email if court.owner else "—" }}</td>
+            <td class="action-cell">
+              <a href="{{ url_for('admin.edit_court', court_id=court.id) }}">Edit</a>
+              {% if court.status != statuses.OPEN %}
+                <form class="inline-form" method="post" action="{{ url_for('admin.court_status', court_id=court.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="status" value="{{ statuses.OPEN }}">
+                  <button class="nav-text-button" type="submit">Approve</button>
+                </form>
+              {% endif %}
+              {% if court.status != statuses.CLOSED %}
+                <form class="inline-form" method="post" action="{{ url_for('admin.court_status', court_id=court.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="status" value="{{ statuses.CLOSED }}">
+                  <button class="nav-text-button" type="submit">Reject</button>
+                </form>
+              {% endif %}
+              {% if court.status != statuses.TEMPORARILY_CLOSED %}
+                <form class="inline-form" method="post" action="{{ url_for('admin.court_status', court_id=court.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="status" value="{{ statuses.TEMPORARILY_CLOSED }}">
+                  <button class="nav-text-button" type="submit">Temporarily close</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">No food courts yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

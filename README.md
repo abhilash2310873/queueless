@@ -4,7 +4,7 @@
 
 QueueLess is a campus food-court ordering and queue system. Students browse stalls, place an order, receive a queue number, and collect food with a signed QR ticket. Stall staff run their own queue. A super admin manages the platform.
 
-This repository is built in phases. Accounts, college-email verification, and role checks are in place. Food courts, menus, carts, queues, and payments come in later phases.
+This repository is built in phases. Accounts, food courts, stalls, and owner logins are in place. Menus, carts, queues, and payments come in later phases.
 
 ## Problem
 
@@ -92,6 +92,14 @@ Development only: `admin@example.local` / `Campus@123`. The command refuses to r
 
 A student or stall owner who opens http://127.0.0.1:5000/admin/users receives 403. Hiding the link is not the protection; the view checks the role.
 
+## Food courts and stalls
+
+Sign in as the super admin and open Food courts. A new court and stall stay closed until you click Approve, which sets the status to OPEN. Reject sets CLOSED.
+
+Create an owner from the Stalls page and pick the stall they run. That account can open My stall and edit only that stall. Opening another stall's address returns 403 because `stalls.owner_id` must match the logged-in user. Staff email is not limited to the college domain.
+
+On Users, Suspend blocks the next login. Activate allows it again. An admin cannot suspend their own account.
+
 ## What is not here yet
 
-Food courts, stalls, menus, cart, checkout, queues, payments, and QR pickup are later phases. See `docs/phase-reports/` after each phase.
+Menus, stock, cart, checkout, queues, payments, and QR pickup are later phases. See `docs/phase-reports/` after each phase.
