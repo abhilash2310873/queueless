@@ -2,7 +2,16 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.auth.forms import LoginForm, RegisterForm, ResendForm, VerifyCodeForm
-from app.auth.services import AuthError, register_student, resend_verification, verify_with_code, verify_with_token
+from app.auth.services import (
+    AuthError,
+    clear_login_failures,
+    login_is_locked,
+    record_login_failure,
+    register_student,
+    resend_verification,
+    verify_with_code,
+    verify_with_token,
+)
 from app.models import User
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -20,7 +29,7 @@ def register():
             flash(str(exc), "danger")
         else:
             flash(
-                "Account created. Enter the verification code from your college email. "
+                "Account created. Enter the verification code from your email. "
                 "In development that code is printed in the terminal running Flask.",
                 "success",
             )
@@ -35,18 +44,20 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data.strip().lower()).first()
+        if login_is_locked(form.email.data):
+            flash("Too many login attempts. Wait 10 minutes and try again.", "danger")
+            return render_template("auth/login.html", form=form)
         # Same message for a missing email and a wrong password.
         if user is None or not user.check_password(form.password.data):
+            record_login_failure(form.email.data)
             flash("Email or password is incorrect.", "danger")
         elif user.is_suspended:
             flash("This account is suspended.", "danger")
         elif not user.email_verified:
-            flash("Verify your college email before signing in.", "warning")
-        elif _login_blocked(form.email.data):
-            flash("Too many login attempts. Wait a few minutes and try again.", "danger")
+            flash("Verify your email before signing in.", "warning")
         else:
             login_user(user)
-            _login_attempts.pop(form.email.data.strip().lower(), None)
+            clear_login_failures(form.email.data)
             from app.models import ActivityLog
             from app.extensions import db
 
@@ -54,7 +65,6 @@ def login():
             db.session.commit()
             flash("You are signed in.", "success")
             return redirect(_safe_next(request.args.get("next")))
-        _note_failed_login(form.email.data)
     return render_template("auth/login.html", form=form)
 
 
@@ -109,7 +119,7 @@ def resend():
         else:
             flash("A new verification code was issued. In development it is printed in the terminal.", "success")
     else:
-        flash("Enter the college email used at registration.", "danger")
+        flash("Enter the email used at registration.", "danger")
     return redirect(url_for("auth.verify_form"))
 
 
@@ -126,17 +136,3 @@ def _safe_next(target: str | None) -> str:
         return target
     return url_for("auth.account")
 
-
-_login_attempts: dict[str, int] = {}
-
-
-def _note_failed_login(email: str) -> None:
-    key = (email or "").strip().lower()
-    _login_attempts[key] = _login_attempts.get(key, 0) + 1
-
-
-def _login_blocked(email: str) -> bool:
-    from flask import current_app
-
-    key = (email or "").strip().lower()
-    return _login_attempts.get(key, 0) >= current_app.config["LOGIN_MAX_ATTEMPTS"]

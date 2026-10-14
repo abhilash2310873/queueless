@@ -13,10 +13,10 @@ def test_home_page(client):
     assert b"Order Smart. Skip the Queue." in response.data
 
 
-def test_unknown_page_is_404(client):
-    response = client.get("/this-page-does-not-exist")
+def test_unknown_api_is_404(client):
+    response = client.get("/api/v1/this-page-does-not-exist")
     assert response.status_code == 404
-    assert b"Page not found" in response.data
+    assert response.get_json()["error"] == "Not found"
 
 
 def test_forbidden_page(app, client):

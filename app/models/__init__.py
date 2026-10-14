@@ -14,7 +14,7 @@ from app.models.order import (
     Review,
 )
 from app.models.payment import Payment, PaymentStatus
-from app.models.user import EmailVerification, Role, User
+from app.models.user import EmailVerification, LoginAttempt, Role, User
 
 __all__ = [
     "ActivityLog",
@@ -27,6 +27,7 @@ __all__ = [
     "FoodCourt",
     "FoodItem",
     "Notification",
+    "LoginAttempt",
     "Order",
     "OrderItem",
     "OrderStatus",

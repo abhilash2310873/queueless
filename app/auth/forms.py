@@ -1,14 +1,12 @@
-from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, Length, ValidationError
 
-from app.auth.services import college_email_allowed
 
 
 class RegisterForm(FlaskForm):
     name = StringField("Full name", validators=[DataRequired(), Length(max=120)])
-    email = StringField("College email", validators=[DataRequired(), Length(max=255)])
+    email = StringField("Email", validators=[DataRequired(), Length(max=255)])
     student_id = StringField("Roll number", validators=[DataRequired(), Length(max=40)])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField(
@@ -18,13 +16,9 @@ class RegisterForm(FlaskForm):
     submit = SubmitField("Create account")
 
     def validate_email(self, field):
-        allowed = college_email_allowed(
-            field.data,
-            current_app.config["STUDENT_EMAIL_DOMAIN"],
-            current_app.config["ALLOW_STUDENT_EMAIL_SUBDOMAINS"],
-        )
-        if not allowed:
-            raise ValidationError("Use your college email address.")
+        email = (field.data or "").strip()
+        if email.count("@") != 1 or "." not in email.split("@", 1)[1]:
+            raise ValidationError("Enter a valid email address.")
 
 
 class LoginForm(FlaskForm):
@@ -34,11 +28,11 @@ class LoginForm(FlaskForm):
 
 
 class VerifyCodeForm(FlaskForm):
-    email = StringField("College email", validators=[DataRequired(), Length(max=255)])
+    email = StringField("Email", validators=[DataRequired(), Length(max=255)])
     code = StringField("Verification code", validators=[DataRequired(), Length(min=6, max=6)])
     submit = SubmitField("Verify")
 
 
 class ResendForm(FlaskForm):
-    email = StringField("College email", validators=[DataRequired(), Length(max=255)])
+    email = StringField("Email", validators=[DataRequired(), Length(max=255)])
     submit = SubmitField("Send a new code")

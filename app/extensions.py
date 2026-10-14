@@ -17,6 +17,15 @@ login_manager.login_message = "Log in to continue."
 login_manager.login_message_category = "warning"
 
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    from flask import jsonify, redirect, request, url_for
+
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Log in to continue."}), 401
+    return redirect(url_for("auth.login"))
+
+
 @login_manager.user_loader
 def load_user(user_id: str):
     """Load the user stored in the session. Unknown ids stay signed out."""

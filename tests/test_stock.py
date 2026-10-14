@@ -99,13 +99,18 @@ def test_restore_does_not_mark_available(app):
 
 
 def test_two_requests_cannot_take_the_last_item(tmp_path):
-    app = create_app("testing")
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + (tmp_path / "race.db").as_posix()
-    # A separate connection per thread, so the two updates really race.
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    from config import TestingConfig
+
+    uri = "sqlite:///" + (tmp_path / "race.db").as_posix()
+    original_uri = TestingConfig.SQLALCHEMY_DATABASE_URI
+    original_options = TestingConfig.SQLALCHEMY_ENGINE_OPTIONS
+    # Set this before create_app so both threads share the file database, not the memory one.
+    TestingConfig.SQLALCHEMY_DATABASE_URI = uri
+    TestingConfig.SQLALCHEMY_ENGINE_OPTIONS = {
         "connect_args": {"check_same_thread": False, "timeout": 10},
         "poolclass": NullPool,
     }
+    app = create_app("testing")
     with app.app_context():
         db.create_all()
         food_id = _food(1)
@@ -138,3 +143,5 @@ def test_two_requests_cannot_take_the_last_item(tmp_path):
         assert item.is_available is False
         db.session.remove()
         db.drop_all()
+    TestingConfig.SQLALCHEMY_DATABASE_URI = original_uri
+    TestingConfig.SQLALCHEMY_ENGINE_OPTIONS = original_options

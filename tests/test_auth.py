@@ -68,11 +68,12 @@ def test_college_email_rules():
     assert not college_email_allowed("x@notcollege.edu", "@college.edu", True)
 
 
-def test_register_rejects_public_email(client):
-    response = _register(client, email="student@gmail.com")
+def test_register_accepts_any_email(client, codes):
+    response = _register(client, email="student@gmail.com", student_id="CS099")
     assert response.status_code == 200
-    assert b"college email" in response.data.lower()
-    assert User.query.filter_by(email="student@gmail.com").first() is None
+    assert b"Account created" in response.data
+    assert User.query.filter_by(email="student@gmail.com").one()
+    assert codes["email"] == "student@gmail.com"
 
 
 def test_register_verify_login_and_logout(client, codes):
@@ -87,7 +88,7 @@ def test_register_verify_login_and_logout(client, codes):
     assert user.verification.code_hash != codes["code"]
 
     blocked = _login(client, "student@college.edu")
-    assert b"Verify your college email" in blocked.data
+    assert b"Verify your email" in blocked.data
 
     verified = client.post(
         "/auth/verify",

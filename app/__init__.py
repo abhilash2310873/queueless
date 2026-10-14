@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, request, send_from_directory
 
 from app.extensions import csrf, db, login_manager, mail, migrate
 from app.models import Role, User
@@ -38,6 +38,7 @@ def create_app(config_name: str | None = None) -> Flask:
     # Importing models registers them on db.metadata for migrations.
     from app import models  # noqa: F401
     from app.admin import admin_bp
+    from app.api import api_bp
     from app.auth import auth_bp
     from app.main import main_bp
     from app.orders import orders_bp
@@ -52,6 +53,10 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(student_bp)
     app.register_blueprint(orders_bp)
     app.register_blueprint(payments_bp)
+    app.register_blueprint(api_bp)
+    # The React app sends JSON on the same site through the Vite proxy.
+    # Cookie sessions replace the HTML form token on these routes.
+    csrf.exempt(api_bp)
     _register_commands(app)
     _register_error_handlers(app)
     return app
@@ -79,11 +84,25 @@ def _register_commands(app: Flask) -> None:
 def _register_error_handlers(app: Flask) -> None:
     @app.errorhandler(403)
     def forbidden(_error):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "Not allowed"}), 403
         return render_template("errors/403.html"), 403
 
     @app.errorhandler(404)
     def not_found(_error):
+        if request.path.startswith("/api/"):
+            return jsonify({"error": "Not found"}), 404
+        # A refresh on a React route such as /orders has no Flask page. Send the app shell.
+        index = Path(app.root_path).parent / "frontend" / "dist" / "index.html"
+        if request.method == "GET" and index.is_file():
+            return send_from_directory(index.parent, "index.html")
         return render_template("errors/404.html"), 404
+
+    assets = Path(app.root_path).parent / "frontend" / "dist" / "assets"
+
+    @app.route("/assets/<path:filename>")
+    def react_assets(filename: str):
+        return send_from_directory(assets, filename)
 
     @app.errorhandler(500)
     def server_error(error):

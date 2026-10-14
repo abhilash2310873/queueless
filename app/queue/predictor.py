@@ -1,36 +1,69 @@
-"""Demand levels from past orders. Training rows are seeded history, not live campus data."""
+"""Demand levels. With enough history this fits a linear model. The rows are synthetic until real orders exist."""
 
-from collections import Counter
 from datetime import datetime
 
 from app.extensions import db
-from app.models import Order, PredictionRecord
+from app.models import FoodItem, Order, OrderItem, PredictionRecord
 
 
 def demand_level(stall_id: int, when: datetime | None = None) -> dict:
     when = when or datetime.now()
-    hour = when.hour
-    counts = Counter()
     rows = Order.query.filter_by(stall_id=stall_id).all()
-    for order in rows:
-        counts[order.created_at.hour] += 1
-    this_hour = counts.get(hour, 0)
-    if not counts:
-        level = "LOW"
-        note = "No order history yet."
-    else:
-        average = sum(counts.values()) / max(len(counts), 1)
-        if this_hour >= average * 1.3 or hour in (12, 13):
-            level = "HIGH" if this_hour >= average else "MEDIUM"
-        elif this_hour <= average * 0.6:
-            level = "LOW"
-        else:
-            level = "MEDIUM"
-        # Lunch hours are the known peak in the seed data.
-        if hour in (12, 13) and level == "LOW":
-            level = "MEDIUM"
-        note = f"Based on {len(rows)} historical orders. Average for an hour with orders is {average:.1f}."
-    record = PredictionRecord(stall_id=stall_id, hour=hour, level=level, note=note)
+    level, note = _predict(rows, when)
+    record = PredictionRecord(stall_id=stall_id, hour=when.hour, level=level, note=note)
     db.session.add(record)
     db.session.commit()
-    return {"level": level, "note": note, "hour": hour}
+    return {"level": level, "note": note, "hour": when.hour}
+
+
+def sellout_insights(stall_id: int) -> list[str]:
+    """Items whose orders cluster at lunch are reported as likely to sell out then."""
+    items = FoodItem.query.filter_by(stall_id=stall_id).all()
+    insights = []
+    for item in items:
+        lines = (
+            OrderItem.query.join(Order)
+            .filter(OrderItem.food_id == item.id, Order.stall_id == stall_id)
+            .all()
+        )
+        if len(lines) < 4:
+            continue
+        lunch = 0
+        for line in lines:
+            hour = line.order.created_at.hour
+            minute = line.order.created_at.minute
+            if hour == 12 and minute >= 45 or hour == 13 and minute <= 30:
+                lunch += 1
+        if lunch / len(lines) >= 0.5:
+            insights.append(f"{item.name} frequently sells out between 12:45 PM and 1:30 PM.")
+    return insights
+
+
+def _predict(rows, when: datetime) -> tuple[str, str]:
+    if len(rows) < 8:
+        return "LOW", "Not enough order history to train a model yet."
+    try:
+        from sklearn.linear_model import LinearRegression
+    except ImportError:
+        return "MEDIUM", "scikit-learn is not installed, so no model was trained."
+    buckets: dict[tuple[int, int], int] = {}
+    for order in rows:
+        key = (order.created_at.weekday(), order.created_at.hour)
+        buckets[key] = buckets.get(key, 0) + 1
+    features = [[day, hour] for day, hour in buckets]
+    targets = list(buckets.values())
+    model = LinearRegression()
+    model.fit(features, targets)
+    predicted = float(model.predict([[when.weekday(), when.hour]])[0])
+    average = sum(targets) / len(targets)
+    if predicted >= average * 1.25:
+        level = "HIGH"
+    elif predicted <= average * 0.75:
+        level = "LOW"
+    else:
+        level = "MEDIUM"
+    note = (
+        f"LinearRegression on {len(rows)} synthetic or real orders. "
+        f"Predicted count for this hour is {predicted:.1f}, average hour is {average:.1f}."
+    )
+    return level, note

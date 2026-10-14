@@ -45,7 +45,36 @@ flask --app run.py db upgrade
 flask --app run.py run --debug
 ```
 
-Open http://127.0.0.1:5000/
+## Deploy
+
+Build the React app once, then run one production server. Set `SECRET_KEY` to a long random string. Leave `PAYMENT_PROVIDER=mock` for a demo. Leave `MAIL_SUPPRESS_SEND=True` if you have no mail server: the verification code and password-reset token are shown on the page. Set `MAIL_SUPPRESS_SEND=False` plus `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, and `MAIL_PASSWORD` to send real email. For more than a small demo, set `DATABASE_URL` to PostgreSQL. Do not leave the seed password `Campus@123` on a public site.
+
+Windows and macOS/Linux:
+
+```bat
+cd frontend
+npm install
+npm run build
+cd ..
+pip install -r requirements.txt
+flask --app run.py db upgrade
+python scripts/seed_data.py
+waitress-serve --listen=0.0.0.0:8000 run:app
+```
+
+Open http://127.0.0.1:8000/
+
+Open http://127.0.0.1:5000/ for the Flask pages during development.
+
+The React app is in `frontend/`. In a second terminal, with Flask already running:
+
+```bat
+cd frontend
+npm install
+npm run dev
+```
+
+On macOS or Linux the `cd` and `npm` commands are the same. Open http://127.0.0.1:5173/ . Vite proxies `/api` to Flask, so the browser keeps one login cookie.
 
 `flask db init` is only needed the first time, and only if the `migrations/` folder is not already in the project.
 

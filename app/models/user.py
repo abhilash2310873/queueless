@@ -33,6 +33,9 @@ class User(UserMixin, db.Model):
     # Set after 5 wrong verification codes. A new code cannot clear this.
     verification_locked = db.Column(db.Boolean, nullable=False, default=False)
     is_suspended = db.Column(db.Boolean, nullable=False, default=False)
+    # Password reset token is stored only as a hash, same idea as email verification.
+    reset_token_hash = db.Column(db.String(64), nullable=True)
+    reset_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
@@ -70,3 +73,14 @@ class EmailVerification(db.Model):
     @staticmethod
     def expiry(minutes: int) -> datetime:
         return utcnow() + timedelta(minutes=minutes)
+
+
+class LoginAttempt(db.Model):
+    """Failed logins kept in the database so a restart does not clear the lock."""
+
+    __tablename__ = "login_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    failures = db.Column(db.Integer, nullable=False, default=0)
+    locked_until = db.Column(db.DateTime, nullable=True)
